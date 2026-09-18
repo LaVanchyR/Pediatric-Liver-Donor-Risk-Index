@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PLDRI — Pediatric Liver Donor Risk Index</title>
+<style>
+:root{--navy:#12304a;--blue:#1976a8;--bg:#f3f7fa;--text:#17212b;--muted:#667785;--border:#d8e1e8;--green:#2e7d32;--amber:#a86500;--red:#b3261e}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif}
+header{background:linear-gradient(135deg,var(--navy),#1e607f);color:#fff;padding:27px 20px}.head{max-width:1080px;margin:auto;display:flex;align-items:center;gap:18px}
+.logo{width:82px;height:64px;flex:none}.head h1{margin:0;font-size:27px}.head p{margin:5px 0 0;opacity:.88}
+main{max-width:1080px;margin:22px auto;padding:0 16px}.card{background:#fff;border:1px solid var(--border);border-radius:16px;padding:22px;margin-bottom:18px;box-shadow:0 5px 20px #1432460f}
+h2{font-size:18px;margin:0 0 16px;color:var(--navy)}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(245px,1fr));gap:16px}
+label{display:block;font-size:14px;font-weight:700;margin-bottom:7px}select,input{width:100%;padding:11px 12px;border:1px solid #b8c6d1;border-radius:9px;background:#fff;font-size:15px}
+.small{font-size:12px;color:var(--muted);margin-top:5px;line-height:1.45}.scorebox{display:grid;grid-template-columns:175px 1fr;gap:25px;align-items:center}
+.circle{width:150px;height:150px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#eef5f8;border:10px solid #cbdfe8;margin:auto}
+.num{font-size:50px;font-weight:850;line-height:1}.clabel{font-size:11px;color:var(--muted);letter-spacing:.5px}.status{font-size:18px;font-weight:800}.green{color:var(--green)}.amber{color:var(--amber)}.red{color:var(--red)}
+.bar{height:12px;background:#e5edf1;border-radius:20px;overflow:hidden;margin:14px 0}.fill{height:100%;background:var(--blue);width:0;transition:.2s}
+button{border:0;border-radius:9px;padding:11px 15px;font-weight:750;cursor:pointer}.primary{background:var(--blue);color:#fff}.secondary{background:#e8eef2;color:var(--navy)}.actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:15px}
+.row{display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px solid #edf1f4;font-size:14px}.pts{font-weight:800}.survgrid{display:grid;grid-template-columns:.85fr 1.15fr;gap:24px}
+.big{font-size:48px;font-weight:850;color:var(--navy);line-height:1.1;margin:6px 0}.message{padding:13px 14px;background:#eef6fa;border-radius:9px;font-size:13px;line-height:1.5}
+table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:8px;text-align:left;border-bottom:1px solid #e6edf1}th{color:var(--muted)}tr.current{background:#e8f3f8;font-weight:800}
+.warning{border-left:4px solid #c98900;background:#fff8e7;padding:13px 14px;font-size:13px;line-height:1.55;border-radius:8px}
+footer{max-width:1080px;margin:0 auto 30px;padding:0 16px;font-size:12px;color:var(--muted);line-height:1.5}
+@media(max-width:700px){.scorebox,.survgrid{grid-template-columns:1fr}}
+</style></head>
+<body>
+<header><div class="head">
+<svg class="logo" viewBox="0 0 120 90" role="img" aria-label="Liver icon"><path d="M15 48C18 25 37 12 66 15c20 2 33 11 39 23 5 11-1 23-13 27-11 4-25 2-35 8-13 8-30 4-38-5-5-6-6-13-4-20Z" fill="none" stroke="white" stroke-width="6"/><path d="M67 16c-3 18-2 29 7 40 4 5 9 8 18 9" fill="none" stroke="white" stroke-width="4"/></svg>
+<div><h1>Pediatric Liver Donor Risk Index</h1><p>PLDRI calculator with score-specific predicted 5-year survival</p></div></div></header>
+
+<main>
+<section class="card"><h2>Donor information</h2><div class="grid">
+<div><label>Donor date of birth</label><input id="dob" type="date"><div class="small">Automatically assigns the manuscript age category using today's date.</div></div>
+<div><label>Donor type</label><select id="type"></select></div>
+<div><label>Total bilirubin (mg/dL)</label><select id="bili"></select></div>
+<div><label>History of diabetes</label><select id="diabetes"></select></div>
+<div><label>Mechanism of death</label><select id="mechanism"></select></div>
+<div><label>Circumstance of death</label><select id="circumstance"></select></div>
+<div><label>Terminal creatinine (mg/dL)</label><select id="creat"></select></div>
+<div><label>Calculated donor age</label><input id="ageDisplay" readonly placeholder="Enter DOB"></div>
+<div><label>Recipient age at transplant (years)</label><input id="recipientAge" type="number" min="0" max="17" step="0.1" placeholder="e.g., 4">
+<div class="small">Used only for the age-specific PLDRI quartile vs living-donor comparison.</div></div>
+</div></section>
+
+<section class="card scorebox">
+<div class="circle"><div class="num" id="score">—</div><div class="clabel">PLDRI SCORE</div></div>
+<div><div id="status" class="status">Enter donor DOB</div><div id="statusText" class="small">Complete donor information to calculate PLDRI.</div><div class="bar"><div id="fill" class="fill"></div></div>
+<div class="actions"><button class="primary" onclick="copyResult()">Copy result</button><button class="secondary" onclick="resetAll()">Reset</button></div></div>
+</section>
+
+<section class="card"><h2>Score breakdown</h2><div id="breakdown"></div></section>
+
+<section class="card"><h2>Predicted 5-year survival</h2><div class="survgrid">
+<div><div class="small">Average predicted survival probability</div><div id="survival" class="big">—</div><div id="sd" class="small"></div>
+<div id="survMsg" class="message" style="margin-top:16px">Supplementary Table 4 provides survival estimates for observed PLDRI scores 2–10.</div></div>
+<div><table><thead><tr><th>PLDRI</th><th>5-year survival, mean (SD)</th><th>Test cohort</th></tr></thead><tbody id="table"></tbody></table></div>
+</div></section>
+
+
+<section class="card"><h2>Recipient age-specific comparison with living donor liver transplant</h2>
+<div class="survgrid">
+<div>
+<div class="small">Recipient age group</div><div id="recipientGroup" class="big" style="font-size:30px">—</div>
+<div class="small">PLDRI quartile</div><div id="quartileDisplay" style="font-size:25px;font-weight:800;color:var(--navy);margin:4px 0 14px">—</div>
+<div id="ldltComparison" class="message">Enter recipient age to compare this deceased-donor PLDRI quartile with living-donor outcomes in the same recipient age group.</div>
+</div>
+<div>
+<table><thead><tr><th>Recipient age</th><th>Living donor position relative to PLDRI quartiles</th></tr></thead>
+<tbody>
+<tr><td>&lt;6 years</td><td>Living donor survival was just below the top PLDRI quartile.</td></tr>
+<tr><td>6–12 years</td><td>Living donor survival was just above the lowest PLDRI quartile.</td></tr>
+<tr><td>13–17 years</td><td>Living donor survival was between the top two PLDRI quartiles.</td></tr>
+</tbody></table>
+<div class="small" style="margin-top:10px">These are qualitative comparisons reported in the manuscript's age-stratified Kaplan–Meier analysis; numeric age-specific LDLT survival percentages were not reported.</div>
+</div></div></section>
+
+<section class="card"><h2>Interpretation notes</h2>
+<div class="warning"><b>Research/clinical support tool:</b> This calculator reproduces the manuscript's PLDRI point system and Supplementary Table 4 survival lookup. It does not independently predict outcomes or incorporate recipient-specific risk.</div>
+<p class="small">Supplementary Table 4 contains observed PLDRI scores 2–10. The app intentionally does not extrapolate survival probabilities for theoretical scores 1 or 11–14.</p>
+<p class="small">Living-donor 5-year graft survival reported in the supplement: 88.9%. The manuscript reports HR 1.19 (95% CI 1.10–1.28) for graft loss per one-point increase in PLDRI.</p>
+</section>
+</main>
+<footer>Source: supplied PLDRI manuscript and supplementary material. Survival values are directly transcribed from Supplementary Table 4.</footer>
+
+<script>
+const f={
+type:[["Whole",0],["Partial",1],["Split",2]],
+bili:[["0–1.2",0],["1.2–2",0],["≥2",-1]],
+diabetes:[["No",0],["Yes",1]],
+mechanism:[["Blunt Injury",0],["Drowning",1],["Seizure",-1],["Drug Intoxication",0],["Asphyxiation",0],["Cardiovascular",-1],["Gunshot or Stab Wound",0],["Intracranial Hemorrhage",0],["Natural Causes",1],["Other Causes",0]],
+circumstance:[["Motor Vehicle Accident",0],["Homicide",0],["Accident (Non-MVA)",-1],["Natural Causes",0],["Other",0]],
+creat:[["<0.3",0],["0.3–0.7",0],["0.7–1",1],["≥1",0]]
+};
+const names={type:"Donor type",bili:"Total bilirubin",diabetes:"Diabetes",mechanism:"Death mechanism",circumstance:"Death circumstance",creat:"Terminal creatinine"};
+const surv={2:[95.2,1.9,"<0.5%"],3:[94.6,3.0,"1.9%"],4:[91.8,6.4,"11.4%"],5:[89.0,7.6,"22.7%"],6:[86.0,9.3,"22.8%"],7:[82.9,10.9,"22.5%"],8:[78.9,10.7,"13.6%"],9:[72.9,11.7,"4.4%"],10:[59.1,17.3,"≥0.5%"]};
+
+for(const [id,a] of Object.entries(f)){const e=document.getElementById(id);e.innerHTML=a.map(x=>`<option value="${x[1]}">${x[0]}</option>`).join("");e.onchange=update}
+document.getElementById("dob").onchange=update;
+document.getElementById("recipientAge").oninput=update;
+
+function age(d){
+ if(!d)return null;let b=new Date(d+"T00:00:00"),n=new Date();if(b>n)return null;
+ let y=n.getFullYear()-b.getFullYear(),m=n.getMonth()-b.getMonth(),day=n.getDate()-b.getDate();
+ if(day<0){m--;day+=new Date(n.getFullYear(),n.getMonth(),0).getDate()}if(m<0){y--;m+=12}let tm=y*12+m,L,P;
+ if(tm<6)[L,P]=["0–6 months",5];else if(tm<12)[L,P]=["6–12 months",4];else if(y<2)[L,P]=["1–2 years",3];
+ else if(y<4)[L,P]=["2–4 years",1];else if(y<6)[L,P]=["4–6 years",2];else if(y<8)[L,P]=["6–8 years",2];
+ else if(y<10)[L,P]=["8–10 years",2];else if(y<12)[L,P]=["10–12 years",0];else if(y<14)[L,P]=["12–14 years",0];
+ else if(y<16)[L,P]=["14–16 years",0];else if(y<18)[L,P]=["16–18 years",1];else if(y<30)[L,P]=["18–30 years",1];
+ else if(y<40)[L,P]=["30–40 years",1];else if(y<50)[L,P]=["40–50 years",2];else [L,P]=["≥50 years",3];
+ return {y,m,day,L,P};
+}
+function update(){
+ let t=0,r="";for(const id of Object.keys(f)){let e=document.getElementById(id),p=+e.value;t+=p;r+=`<div class="row"><span>${names[id]}: ${e.options[e.selectedIndex].text}</span><span class="pts">${p>0?"+":""}${p}</span></div>`}
+ let a=age(document.getElementById("dob").value);document.getElementById("ageDisplay").value=a?`${a.y}y ${a.m}m ${a.day}d — ${a.L}`:"";
+ if(a){t+=a.P;r+=`<div class="row"><span>Donor age: ${a.L}</span><span class="pts">${a.P>0?"+":""}${a.P}</span></div>`}else r+=`<div class="row"><span>Donor age</span><span class="pts">Enter DOB</span></div>`;
+ document.getElementById("breakdown").innerHTML=r;document.getElementById("score").textContent=a?t:"—";
+ if(!a){document.getElementById("fill").style.width="0";showSurv(null);updateLDLT(null);return}
+ document.getElementById("fill").style.width=Math.max(0,Math.min(100,(t-1)/13*100))+"%";
+ let st=document.getElementById("status");st.className="status "+(t<=5?"green":t<=8?"amber":"red");st.textContent=t<=5?"Lower PLDRI score":t<=8?"Intermediate PLDRI score":"Higher PLDRI score";
+ document.getElementById("statusText").textContent=`PLDRI ${t} • theoretical range 1–14`;showSurv(t);updateLDLT(t);
+}
+
+function quartileFor(score){
+ if(score==null)return null;
+ if(score>=2 && score<=5)return {q:1,label:"Quartile 1 (PLDRI 2–5)",rank:"top"};
+ if(score===6)return {q:2,label:"Quartile 2 (PLDRI 6)",rank:"second"};
+ if(score===7)return {q:3,label:"Quartile 3 (PLDRI 7)",rank:"third"};
+ if(score>=8 && score<=10)return {q:4,label:"Quartile 4 (PLDRI 8–10)",rank:"lowest"};
+ return {q:null,label:"Outside observed quartile range",rank:"unknown"};
+}
+function updateLDLT(score){
+ const a=parseFloat(document.getElementById("recipientAge").value);
+ const g=document.getElementById("recipientGroup"),qel=document.getElementById("quartileDisplay"),out=document.getElementById("ldltComparison");
+ const q=quartileFor(score); qel.textContent=q?q.label:"—";
+ if(Number.isNaN(a)){g.textContent="—";out.textContent="Enter recipient age to compare this deceased-donor PLDRI quartile with living-donor outcomes in the same recipient age group.";return}
+ if(a<0||a>=18){g.textContent="Outside pediatric study groups";out.textContent="The manuscript's age-specific LDLT comparison was limited to recipients <18 years.";return}
+ let group,ldltPosition;
+ if(a<6){group="<6 years";ldltPosition="just below the top PLDRI quartile";}
+ else if(a<13){group="6–12 years";ldltPosition="just above the lowest PLDRI quartile";}
+ else{group="13–17 years";ldltPosition="between the top two PLDRI quartiles";}
+ g.textContent=group;
+ if(!q||q.q==null){out.textContent=`For recipients ${group}, living-donor survival was ${ldltPosition}. This PLDRI score was outside the observed quartile range, so a quartile-level comparison is not assigned.`;return}
+ let result="";
+ if(a<6){
+   if(q.q===1) result="This deceased-donor PLDRI quartile had slightly higher 5-year survival than LDLT in recipients <6.";
+   else result="LDLT had higher 5-year survival than this deceased-donor PLDRI quartile in recipients <6.";
+ } else if(a<13){
+   if(q.q<=3) result="This deceased-donor PLDRI quartile had higher 5-year survival than LDLT in recipients 6–12.";
+   else result="LDLT had slightly higher 5-year survival than the lowest deceased-donor PLDRI quartile in recipients 6–12.";
+ } else {
+   if(q.q===1) result="This deceased-donor PLDRI quartile had higher 5-year survival than LDLT in recipients 13–17.";
+   else if(q.q===2) result="LDLT had higher 5-year survival than this deceased-donor PLDRI quartile in recipients 13–17.";
+   else result="LDLT had higher 5-year survival than this deceased-donor PLDRI quartile in recipients 13–17.";
+ }
+ out.textContent=result+" Qualitative comparison from the manuscript's age-stratified Kaplan–Meier analysis.";
+}
+
+function showSurv(s){
+ let v=surv[s];document.getElementById("table").innerHTML=Object.entries(surv).map(([k,x])=>`<tr class="${+k===s?"current":""}"><td>${k}</td><td>${x[0]}% (${x[1]}%)</td><td>${x[2]}</td></tr>`).join("");
+ if(v){document.getElementById("survival").textContent=v[0]+"%";document.getElementById("sd").textContent=`Mean (SD): ${v[0]}% (${v[1]}%)`;document.getElementById("survMsg").textContent=`For PLDRI ${s}, Supplementary Table 4 reports average predicted 5-year survival of ${v[0]}% (SD ${v[1]}%).`}
+ else{document.getElementById("survival").textContent=s==null?"—":"Not reported";document.getElementById("sd").textContent="";document.getElementById("survMsg").textContent=s==null?"Supplementary Table 4 provides survival estimates for observed PLDRI scores 2–10.":`No survival estimate was reported for PLDRI ${s}; no extrapolation is performed.`}
+}
+async function copyResult(){let s=document.getElementById("score").textContent;if(s==="—")return;let v=surv[+s],text=`PLDRI score: ${s}${v?`\nAverage predicted 5-year survival: ${v[0]}% (SD ${v[1]}%)`:"\n5-year survival: not reported for this score"}`;try{await navigator.clipboard.writeText(text);alert("PLDRI result copied.")}catch(e){alert(text)}}
+function resetAll(){Object.keys(f).forEach(x=>document.getElementById(x).selectedIndex=0);document.getElementById("dob").value="";document.getElementById("recipientAge").value="";document.getElementById("status").className="status";document.getElementById("status").textContent="Enter donor DOB";document.getElementById("statusText").textContent="Complete donor information to calculate PLDRI.";update()}
+update();
+</script></body></html>
