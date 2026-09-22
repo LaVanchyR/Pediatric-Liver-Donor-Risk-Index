@@ -8,7 +8,7 @@ Data from the Scientific Registry of Transplant Recipients (SRTR) are required t
 An html application for calculating the Pediatric Liver Donor Risk Index for a given patient is available. To run the application, download the PLDRI_calculator.html file and open in a web browser.
 
 Files should be run in this order
-- data management.R
-- LD analysis.R
-- analysis.R
-- partial R2 analysis.R
+1. data management.R
+2. LD analysis.R
+3. analysis.R
+4. partial R2 analysis.R
