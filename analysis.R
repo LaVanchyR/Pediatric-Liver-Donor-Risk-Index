@@ -381,7 +381,7 @@ lambda_min_ridge <- model_ridge$lambda.min
 #extract coefficients
 coef_model_ridge <- coef(model_ridge, s = "lambda.min")
 
-#rerun the model with the lambda min lasso value
+#rerun the model with the lambda min value
 model_ridge_min <- glmnet(
   x = data_train_x,
   y = data_train_y,
@@ -534,7 +534,7 @@ lambda_min_EL <- model_EL$lambda.min
 #extract coefficients
 coef_model_EL <- coef(model_EL, s = "lambda.min")
 
-#rerun the model with the lambda min lasso value
+#rerun the model with the lambda min value
 model_EL_min <- glmnet(
   x = data_train_x,
   y = data_train_y,
@@ -687,7 +687,7 @@ lambda_min_adapt <- model_adapt$lambda.min
 #extract coefficients
 coef_model_adapt <- coef(model_adapt, s = "lambda.min")
 
-#rerun the model with the lambda min lasso value
+#rerun the model with the lambda min value
 model_adapt_min <- glmnet(
   x = data_train_x,
   y = data_train_y,
