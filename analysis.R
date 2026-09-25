@@ -595,7 +595,7 @@ model_EL_min_brier <- Brier(
 )
 
 
-#
+#AUROC
 auc_results_EL <- timeROC(
   T = data_test$gs_time,
   delta = data_test$gs_outcome,
