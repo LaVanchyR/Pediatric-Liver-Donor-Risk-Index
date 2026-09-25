@@ -557,7 +557,6 @@ pred_EL <- predict(
 
 #C-Index
 model_EL_min_cindex <- glmnet::Cindex(pred = pred_EL, y = data_test_y)
-#0.642
 
 #Deviance ratio
 dr_EL <- model_EL_min$dev.ratio
